@@ -1,0 +1,25 @@
+{
+    "name": "greenimp/laravel-active-date-range",
+    "description": "Easy handling of Laravel models that have a to / from date",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Lee Langley",
+            "email": "lee@greenimp.co.uk"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "GreenImp\\DateRange\\": "src"
+        }
+    },
+    "require": {
+        "php": "^8.0|8.1|8.2",
+        "illuminate/database": "^8.0|^9.0",
+        "illuminate/support": "^8.0|^9.0",
+        "nesbot/carbon": "^2.65"
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
