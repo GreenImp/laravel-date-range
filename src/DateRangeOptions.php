@@ -28,10 +28,15 @@ class DateRangeOptions
         return $this;
     }
 
-    public function startOptional(bool $optional): self
+    public function startOptional(bool $optional = true): self
     {
         $this->startOptional = $optional;
 
         return $this;
+    }
+
+    public function startRequired(): self
+    {
+        return $this->startOptional(false);
     }
 }
