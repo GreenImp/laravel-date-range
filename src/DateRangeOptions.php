@@ -9,7 +9,7 @@ class DateRangeOptions
         //
     }
 
-    public function create(string $startField = 'start_at', string $endAtField = 'end_at', bool $startOptional = false): static
+    public static function create(string $startField = 'start_at', string $endAtField = 'end_at', bool $startOptional = false): static
     {
         return new static($startField, $endAtField, $startOptional);
     }

@@ -547,5 +547,5 @@ trait HasDateRange
         return $this->getStartAt()->lessThanOrEqualTo($date);
     }
 
-    abstract public static function getDateRangeOptions(): DateRangeOptions;
+    abstract public function getDateRangeOptions(): DateRangeOptions;
 }
