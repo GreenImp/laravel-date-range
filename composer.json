@@ -26,6 +26,11 @@
         "illuminate/support": "^8.0|^9.0",
         "nesbot/carbon": "^2.65"
     },
+    "laravel": {
+        "providers": [
+            "GreenImp\\DateRange\\DateRangeServiceProvider"
+        ]
+    },
     "minimum-stability": "dev",
     "prefer-stable": true
 }

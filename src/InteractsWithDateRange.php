@@ -7,13 +7,13 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 
 /**
- * Trait HasDateRange.
+ * Trait InteractsWithDateRange.
  *
  * @property-read bool has_ended Whether the model's date range has ended or not.
  * @property-read bool has_started Whether the model's date range has started or not.
  * @property-read bool is_active Whether the model's dates are currently active or not.
  */
-trait HasDateRange
+trait InteractsWithDateRange
 {
     protected DateRangeOptions $dateRangeOptions;
 
@@ -39,9 +39,9 @@ trait HasDateRange
      * @param  Builder  $query
      * @return Builder
      */
-    public function scopeActive(Builder $query): Builder
+    public function scopeIsActive(Builder $query): Builder
     {
-        return $query->activeOn(Carbon::now());
+        return $query->isActiveOn(Carbon::now());
     }
 
     /**
@@ -51,10 +51,10 @@ trait HasDateRange
      * not set (model still active) or is set to a date after the given date (Ended after the given date).
      *
      * @param  Builder  $query
-     * @param  Carbon  $to
+     * @param  Carbon  $date
      * @return Builder
      */
-    public function scopeActiveOn(Builder $query, Carbon $to): Builder
+    public function scopeIsActiveOn(Builder $query, Carbon $to): Builder
     {
         return $query
             ->startedByDate($to)
@@ -296,7 +296,7 @@ trait HasDateRange
      * @see {@link scopeHasntStarted} to only check if it hasn't started yet.
      * @see {@link scopeEnded} to only check if it's already ended.
      */
-    public function scopeInactive(Builder $query): Builder
+    public function scopeIsInactive(Builder $query): Builder
     {
         // model is inactive if it hasn't started yet (No start, or start in the future)
         // or if it's already ended
@@ -307,6 +307,21 @@ trait HasDateRange
                     return $query->ended();
                 });
         });
+    }
+
+    public function scopeIsInactiveOn(Builder $query, Carbon $date): Builder
+    {
+        return $query->where(function (Builder $query) use ($date) {
+            return $query->hasntStartedBy($date)
+                ->orWhere(fn (Builder $query) => $query->endedBy($date));
+        });
+    }
+
+    public function scopeOrderByDateRange(Builder $query, string $direction = 'asc'): Builder
+    {
+        return $query
+            ->orderBy($this->dateRangeOptions->startAtField, $direction)
+            ->orderBy($this->dateRangeOptions->endAtField, $direction);
     }
 
     /**
@@ -335,8 +350,8 @@ trait HasDateRange
      * @param  Carbon  $date
      * @return Builder
      *
-     * @see {@link HasDateRange::scopeActiveOn} To only return models than have started by the date, and have not ended by it.
-     * @see {@link HasDateRange::scopeEndedBy} For the opposite of this.
+     * @see {@link InteractsWithDateRange::scopeIsActiveOn} To only return models than have started by the date, and have not ended by it.
+     * @see {@link InteractsWithDateRange::scopeEndedBy} For the opposite of this.
      */
     public function scopeStartedByDate(Builder $query, Carbon $date): Builder
     {
@@ -412,12 +427,12 @@ trait HasDateRange
      * Whether the model's date range has ended or not.
      *
      * _Note: the date range may not have started.
-     * See {@link HasDateRange::getIsActiveAttribute} to see if the model is active._
+     * See {@link InteractsWithDateRange::getIsActiveAttribute} to see if the model is active._
      *
      * @return bool
      *
-     * @see {@link HasDateRange::getHasStartedAttribute()} to see if the model has started.
-     * @see {@link HasDateRange::getIsActiveAttribute()} to see if the model is active.
+     * @see {@link InteractsWithDateRange::getHasStartedAttribute()} to see if the model has started.
+     * @see {@link InteractsWithDateRange::getIsActiveAttribute()} to see if the model is active.
      */
     public function getHasEndedAttribute(): bool
     {
@@ -428,12 +443,12 @@ trait HasDateRange
      * Whether the model's date range has started or not.
      *
      * _Note: the date range may have also ended.
-     * See {@link HasDateRange::getIsActiveAttribute} to see if the model is active._
+     * See {@link InteractsWithDateRange::getIsActiveAttribute} to see if the model is active._
      *
      * @return bool
      *
-     * @see {@link HasDateRange::getHasEndedAttribute()} to see if the model has ended.
-     * @see {@link HasDateRange::getIsActiveAttribute()} to see if the model is active.
+     * @see {@link InteractsWithDateRange::getHasEndedAttribute()} to see if the model has ended.
+     * @see {@link InteractsWithDateRange::getIsActiveAttribute()} to see if the model is active.
      */
     public function getHasStartedAttribute(): bool
     {
@@ -445,12 +460,12 @@ trait HasDateRange
      *
      * @return bool
      *
-     * @see {@link HasDateRange::getHasStartedAttribute()} to see if the model has started.
-     * @see {@link HasDateRange::getHasEndedAttribute()} to see if the model has ended.
+     * @see {@link InteractsWithDateRange::getHasStartedAttribute()} to see if the model has started.
+     * @see {@link InteractsWithDateRange::getHasEndedAttribute()} to see if the model has ended.
      */
     public function getIsActiveAttribute(): bool
     {
-        return $this->activeOn(Carbon::now());
+        return $this->isActive();
     }
 
     /* Methods */
@@ -485,7 +500,7 @@ trait HasDateRange
      * @param  Carbon  $date
      * @return bool
      */
-    public function activeOn(Carbon $date): bool
+    public function isActiveOn(Carbon $date): bool
     {
         return $this->startedBy($date) && ! $this->endedBy($date);
     }
@@ -515,6 +530,11 @@ trait HasDateRange
         }
 
         return $this->getEndAt()->lessThanOrEqualTo($date);
+    }
+
+    public function isActive(): bool
+    {
+        return $this->isActiveOn(Carbon::now());
     }
 
     protected function getEndAt(): ?Carbon

@@ -9,9 +9,13 @@ class DateRangeOptions
         //
     }
 
-    public static function create(string $startField = 'start_at', string $endAtField = 'end_at', bool $startOptional = false): static
+    public static function create(?string $startField = null, ?string $endAtField = null, ?bool $startOptional = null): static
     {
-        return new static($startField, $endAtField, $startOptional);
+        return new static(
+            $startField ?? config('date-range.column_names.date_start_at_key'),
+            $endAtField ?? config('date-range.column_names.date_end_at_key'),
+            $startOptional ?? config('date-range.start_optional', false)
+        );
     }
 
     public function startAtField(string $field): self
