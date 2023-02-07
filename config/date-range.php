@@ -22,30 +22,30 @@ return [
     ],
 
     'column_names' => [
-        /**
+        /*
          * The field name used as the ID for the date ranges table.
          */
         'date_range_key' => 'id',
 
-        /**
+        /*
          * The field names used for the date range start and end dates.
          */
         'date_start_at_key' => 'start_at',
         'date_end_at_key' => 'end_at',
 
-        /**
+        /*
          * The field name used for the polymorphic ID in the date ranges table.
          */
         'model_morph_key' => 'model_id',
     ],
 
-    /**
+    /*
      * Setting to false will stop the DB table for `date_ranges` from being created when the migration is run.
      * This can be useful if you'll only be using models with a single start / end date range.
      */
     'multiple_dates' => true,
 
-    /**
+    /*
      * Set to true if you want models with no start date to be classed as active (ie. if you only want to set an end
      * date).
      */
