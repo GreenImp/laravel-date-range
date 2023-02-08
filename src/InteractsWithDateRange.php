@@ -567,5 +567,10 @@ trait InteractsWithDateRange
         return $this->getStartAt()->lessThanOrEqualTo($date);
     }
 
+    /**
+     * Get the options for the date range.
+     *
+     * @return DateRangeOptions
+     */
     abstract public function getDateRangeOptions(): DateRangeOptions;
 }

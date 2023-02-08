@@ -5,7 +5,7 @@ namespace GreenImp\DateRange\Contracts;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 
-interface DateRangeable
+interface HasDateRange
 {
     /**
      * Scope the query to only models where their active date is currently active.

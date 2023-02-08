@@ -4,7 +4,7 @@ namespace GreenImp\DateRange\Contracts;
 
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 
-interface HasDateRanges extends DateRangeable
+interface HasDateRanges extends HasDateRange
 {
     /**
      * The date ranges for the model.
