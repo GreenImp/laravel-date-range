@@ -3,6 +3,7 @@
 namespace GreenImp\DateRange;
 
 use Carbon\Carbon;
+use GreenImp\DateRange\Contracts\HasDateRange;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 
@@ -16,6 +17,16 @@ use Illuminate\Database\Eloquent\Collection;
 trait InteractsWithDateRange
 {
     protected DateRangeOptions $dateRangeOptions;
+
+    /**
+     * Initialise the trait.
+     *
+     * @return void
+     */
+    protected function initializeInteractsWithDateRange(): void
+    {
+        $this->dateRangeOptions = $this->getDateRangeOptions();
+    }
 
     /* Scopes */
 

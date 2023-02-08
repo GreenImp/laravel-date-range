@@ -12,35 +12,6 @@ class DateRange extends Model implements DateRangeInterface
 {
     use InteractsWithDateRange;
 
-    public function __construct(array $attributes = [])
-    {
-        $attributes[$this->dateRangeOptions->startAtField] = $attributes[$this->dateRangeOptions->startAtField]
-            ?? $attributes[config('date-range.column_names.date_start_at_key')]
-            ?? null;
-
-        $attributes[$this->dateRangeOptions->endAtField] = $attributes[$this->dateRangeOptions->endAtField]
-            ?? $attributes[config('date-range.column_names.date_end_at_key')]
-            ?? null;
-
-        parent::__construct($attributes);
-
-        $this->fillable[] = $this->dateRangeOptions->startAtField;
-        $this->fillable[] = $this->dateRangeOptions->endAtField;
-    }
-
-    public function create(array $attributes = [])
-    {
-        $attributes[$this->dateRangeOptions->startAtField] = $attributes[$this->dateRangeOptions->startAtField]
-            ?? $attributes[config('date-range.column_names.date_start_at_key')]
-            ?? null;
-
-        $attributes[$this->dateRangeOptions->endAtField] = $attributes[$this->dateRangeOptions->endAtField]
-            ?? $attributes[config('date-range.column_names.date_end_at_key')]
-            ?? null;
-
-        return static::query()->create($attributes);
-    }
-
     public function getTable(): string
     {
         return config('date-range.table_names.date_ranges', parent::getTable());
