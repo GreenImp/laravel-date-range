@@ -112,10 +112,12 @@ trait InteractsWithDateRanges
         /** @var DateRangeOptions $dateRangeConfig */
         $dateRangeOptions = (new (config('date-ranges.models.date_range')))->getDateRangeOptions();
 
-        return $this->dates()->create([
+        $this->dates()->create([
             $dateRangeOptions->startAtField => $date,
             $dateRangeOptions->endAtField => null,
         ]);
+
+        return true;
     }
 
     public function deactivate(?Carbon $date): bool
