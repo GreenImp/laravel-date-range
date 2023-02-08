@@ -30,7 +30,7 @@ return new class extends Migration {
                 $table->string('model_type');
                 $table->unsignedBigInteger($columnNames['model_morph_key']);
 
-                if ((new config('date-range.models.date_range'))->timestamps) {
+                if ((new (config('date-range.models.date_range')))->timestamps) {
                     $table->timestamps();
                 }
 

@@ -50,33 +50,36 @@ trait InteractsWithDateRanges
 
     public function scopeOrderByDateRange(Builder $query, string $direction = 'asc'): Builder
     {
+        /** @var DateRangeOptions $dateRangeConfig */
+        $dateRangeOptions = (new (config('date-ranges.models.date_range')))->getDateRangeOptions();
+
         if ($direction === 'asc') {
             return $query
                 ->orderBy(
                     $this->getDatesOrderQuery($direction)
-                        ->select($this->dateRangeOptions->startAtField)
+                        ->select($dateRangeOptions->startAtField)
                 )
                 ->orderBy(
                     $this->getDatesOrderQuery($direction)
-                        ->select($this->dateRangeOptions->endAtField)
+                        ->select($dateRangeOptions->endAtField)
                 );
         }
 
         return $query
             ->orderBy(
                 $this->getDatesOrderQuery($direction)
-                    ->select($this->dateRangeOptions->endAtField)
+                    ->select($dateRangeOptions->endAtField)
             )
             ->orderBy(
                 $this->getDatesOrderQuery($direction)
-                    ->select($this->dateRangeOptions->startAtField)
+                    ->select($dateRangeOptions->startAtField)
             );
     }
 
     protected function getDatesOrderQuery($direction = 'asc'): Builder
     {
         /** @var Model $dateModel */
-        $dateModel = new config('date-ranges.models.date_range');
+        $dateModel = new (config('date-ranges.models.date_range'));
 
         return $dateModel
             ->newQuery()
@@ -106,9 +109,12 @@ trait InteractsWithDateRanges
             return true;
         }
 
+        /** @var DateRangeOptions $dateRangeConfig */
+        $dateRangeOptions = (new (config('date-ranges.models.date_range')))->getDateRangeOptions();
+
         return $this->dates()->create([
-            $this->dateRangeOptions->startAtField => $date,
-            $this->dateRangeOptions->endAtField => null,
+            $dateRangeOptions->startAtField => $date,
+            $dateRangeOptions->endAtField => null,
         ]);
     }
 
