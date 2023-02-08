@@ -6,7 +6,7 @@ use Illuminate\Support\ServiceProvider;
 
 class DateRangeServiceProvider extends ServiceProvider
 {
-    public function boot()
+    public function boot(): void
     {
         $this->offerPublishing();
     }
@@ -16,7 +16,7 @@ class DateRangeServiceProvider extends ServiceProvider
      *
      * @return void
      */
-    protected function offerPublishing()
+    protected function offerPublishing(): void
     {
         $this->publishes([
             __DIR__.'/../config/date-range.php' => config_path('date-range.php'),
@@ -27,7 +27,7 @@ class DateRangeServiceProvider extends ServiceProvider
         ], 'migrations');
     }
 
-    public function register()
+    public function register(): void
     {
         $this->mergeConfigFrom(
             __DIR__.'/../config/date-range.php',

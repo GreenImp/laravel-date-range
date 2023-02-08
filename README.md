@@ -20,7 +20,7 @@ tables, unless you are using a custom model.
 First, publish the migrations:
 
 ```bash
-php artisan vendor:publish --provider="GreenImp\DateRangeDateRangeServiceProvider" --tag="migrations"
+php artisan vendor:publish --provider="GreenImp\DateRange\DateRangeServiceProvider" --tag="migrations"
 ```
 
 The run them:
@@ -41,7 +41,7 @@ php artisan migrate
 Publishing the [config file](./config/date-range.php) is optional:
 
 ```bash
-php artisan vendor:publish --provider="GreenImp\DateRangeDateRangeServiceProvider" --tag="config"
+php artisan vendor:publish --provider="GreenImp\DateRange\DateRangeServiceProvider" --tag="config"
 ```
 
 ## Usage
