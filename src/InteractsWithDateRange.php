@@ -26,7 +26,7 @@ trait InteractsWithDateRange
      */
     public static function bootInteractsWithDateRange()
     {
-        static::resolveRelationUsing(config('date-ranges.models.relationship.name_on_child'), function (self $model) {
+        static::resolveRelationUsing(config('date-range.relationship.name_on_child'), function (self $model) {
             $options = $model->getDateRangeOptions();
 
             if ($options->polymorphic) {
