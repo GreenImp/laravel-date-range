@@ -30,11 +30,10 @@ class DateRangesOptions
     {
         return new static(
             $dateRangeModel ?? config('date-range.models.date_range'),
-                $foreignKeyName ?? config(
-                    'date-range.relationship.foreign_key_name',
-                    Str::singular(config('date-range.relationship.name_on_child'))
-                ),
-                $polymorphic ?? config('date-range.relationship.polymorphic', true),
+            $foreignKeyName
+                ?? config('date-range.relationship.foreign_key_name')
+                ?? Str::singular(config('date-range.relationship.name_on_child')),
+            $polymorphic ?? config('date-range.relationship.polymorphic', true),
         );
     }
 

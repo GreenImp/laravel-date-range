@@ -38,10 +38,9 @@ class DateRangeOptions
             $startField ?? config('date-range.column_names.date_start_at_key'),
             $endAtField ?? config('date-range.column_names.date_end_at_key'),
             $startOptional ?? config('date-range.start_optional', false),
-            $foreignKeyName ?? config(
-                'date-range.relationship.foreign_key_name',
-                Str::singular(config('date-range.relationship.name_on_child'))
-            ),
+            $foreignKeyName
+                ?? config('date-range.relationship.foreign_key_name')
+                ?? Str::singular(config('date-range.relationship.name_on_child')),
             $polymorphic ?? config('date-range.relationship.polymorphic', true),
             $parent ?? config('date-range.relationship.parent_model'),
         );
