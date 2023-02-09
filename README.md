@@ -12,10 +12,20 @@ This package is built for Laravel 8-9.
 composer require "greenimp/laravel-date-range:^2.0.0"
 ```
 
+### Configuring the package
+
+Publishing the [config file](./config/date-range.php) is optional:
+
+```bash
+php artisan vendor:publish --provider="GreenImp\DateRange\DateRangeServiceProvider" --tag="config"
+```
+
 ### Set up the DB
 
 If you want to use [multiple date ranges](#multiple-date-ranges) on a single model, then you need to create the DB
 tables, unless you are using a custom model.
+
+> **Note:** There are several configuration options that will affect the migration file, when run. Please read over them prior to running the migration.
 
 First, publish the migrations:
 
@@ -36,14 +46,6 @@ The run them:
 php artisan migrate
 ```
 
-### Configuring the package
-
-Publishing the [config file](./config/date-range.php) is optional:
-
-```bash
-php artisan vendor:publish --provider="GreenImp\DateRange\DateRangeServiceProvider" --tag="config"
-```
-
 ## Usage
 
 ### Single date ranges
@@ -55,6 +57,8 @@ The trait contains an abstract method `getDateRangeOptions`, which you must impl
 
 Your models' migrations should have `datetime` fields to save the start / end dates to.
 
+> **Note:** You can also use the [`DateRange`](./src/Models/DateRange.php) model directly, rather than building your own custom class, if you prefer.
+
 Here's an example of how to implement the trait:
 
 ```php
@@ -62,8 +66,8 @@ Here's an example of how to implement the trait:
 namespace App\Models;
 
 use GreenImp\DateRange\Contracts\HasDateRange;
-use GreenImp\DateRange\DateRangeOptions;
 use GreenImp\DateRange\InteractsWithDateRange;
+use GreenImp\DateRange\Options\DateRangeOptions;
 use Illuminate\Database\Eloquent\Model;
 
 class SingleDateModel extends Model implements HasDateRange
@@ -97,7 +101,7 @@ use Illuminate\Database\Schema\Blueprint;
 return new class extends Migration {
     public function up()
     {
-        Schema::create('your_eloquent_models', function (Blueprint $table) {
+        Schema::create('single_date_models', function (Blueprint $table) {
             $table->id();
             $table->datetime('from'); // Field name same as the `startAtField` in your `getDateRangeOptions`
             $table->datetime('to'); // Field name same as the `endAtField` in your `getDateRangeOptions`
@@ -114,6 +118,10 @@ If your model has multiple date ranges (e.g. A repeating event such as a nationa
 
 The trait adds a new `dates` relationship, which links to the list of date ranges.
 
+The trait also contains an abstract method `getDateRangeOptions`, which you must implement yourself.
+
+> **Note:** You can also use the [`Event`](./src/Models/Event.php) model directly, rather than building your own custom class, if you prefer.
+
 ```php
 <?php
 namespace App\Models;
@@ -125,10 +133,24 @@ use Illuminate\Database\Eloquent\Model;
 class MultipleDateModel extends Model implements HasDateRanges
 {
     use InteractsWithDateRanges;
+    
+    /**
+     * Get the options for the date ranges.
+     *
+     * @return DateRangesOptions
+     */
+    public function getDateRangesOptions(): DateRangesOptions
+    {
+        return DateRangesOptions::create()
+            // these are optional - if not called, the default values from the config will be used
+            ->dateRangeModel(\App\Models\SingleDateModel::class)
+            ->foreignKeyName('parent')
+            ->polymorphic(false);
+    }
 }
 ```
 
-> **Note:** Unless you're using a [custom model](#custom-date-range-model) for the date ranges, then you'll need to
+> **Note:** Unless you're using a [custom model](#custom-date-range-model) for the date ranges, you'll need to
 > [run the migration](#set-up-the-db).
 
 ### Customisation
@@ -152,6 +174,7 @@ return [
     'models' => [
         // Set the value to your custom class.
         'date_range' => \GreenImp\DateRange\Models\DateRange::class,
+        ...
     ],
     ...
 ];
@@ -185,3 +208,25 @@ You can also rename the table columns that will be used in the migration.
 
 > **Note:** This will also affect the default field names for the start / end dates of the `DateRangeOptions` class,
 > used in the `getDateRangeOptions` method.
+
+#### Polymorphism
+
+By default, this package uses a [polymorphic one to many](https://laravel.com/docs/9.x/eloquent-relationships#one-to-many-polymorphic-relations) relationship between the parent models and the `DateRange` models.
+
+The migration file and model relationships reflect this.
+
+If you wish to use a standard [one to many](https://laravel.com/docs/9.x/eloquent-relationships#one-to-many) relationship, you can set it in the config:
+
+```php
+<?php
+
+return [
+    ...
+    'relationship' => [
+        ...
+        'polymorphic' => false,
+        ...
+    ],
+    ...
+];
+```

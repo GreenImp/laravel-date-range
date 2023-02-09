@@ -3,9 +3,10 @@
 namespace GreenImp\DateRange;
 
 use Carbon\Carbon;
-use GreenImp\DateRange\Contracts\HasDateRange;
+use GreenImp\DateRange\Options\DateRangeOptions;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Str;
 
 /**
  * Trait InteractsWithDateRange.
@@ -17,6 +18,24 @@ use Illuminate\Database\Eloquent\Collection;
 trait InteractsWithDateRange
 {
     protected DateRangeOptions $dateRangeOptions;
+
+    /**
+     * Boot the trait.
+     *
+     * @return void
+     */
+    public static function bootInteractsWithDateRange()
+    {
+        static::resolveRelationUsing(config('date-ranges.models.relationship.name_on_child'), function (self $model) {
+            $options = $model->getDateRangeOptions();
+
+            if ($options->polymorphic) {
+                return $model->morphTo();
+            } elseif (isset($options->parent)) {
+                return $model->belongsTo($options->parent, $options->foreignKeyName.'_id');
+            }
+        });
+    }
 
     /**
      * Initialise the trait.

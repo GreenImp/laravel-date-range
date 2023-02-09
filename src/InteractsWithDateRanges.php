@@ -3,14 +3,22 @@
 namespace GreenImp\DateRange;
 
 use Carbon\Carbon;
+use GreenImp\DateRange\Options\DateRangeOptions;
+use GreenImp\DateRange\Options\DateRangesOptions;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
-use Illuminate\Database\Eloquent\SoftDeletes;;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 trait InteractsWithDateRanges
 {
-    public static function bootInteractsWithMedia()
+    protected DateRangesOptions $dateRangesOptions;
+
+    /**
+     * Boot the trait.
+     *
+     * @return void
+     */
+    public static function bootInteractsWithDateRanges()
     {
         static::deleting(function (self $model) {
             if (in_array(SoftDeletes::class, class_uses_recursive($model))) {
@@ -19,39 +27,66 @@ trait InteractsWithDateRanges
                 }
             }
 
-            $model->dates()->cursor()->each->delete();
+            $model->{config('date-range.relationship.name_on_parent')}()->cursor()->each->delete();
+        });
+
+        static::resolveRelationUsing(config('date-range.relationship.name_on_parent'), function (self $model) {
+            $options = $this->getDateRangesOptions();
+
+            if ($options->polymorphic) {
+                return $model->morphMany($options->dateRangeModel, $options->foreignKeyName);
+            } else {
+                return $model->hasMany($options->dateRangeModel, $options->foreignKeyName.'_id');
+            }
         });
     }
 
-    public function dates(): MorphMany
+    /**
+     * Initialise the trait.
+     *
+     * @return void
+     */
+    protected function initializeInteractsWithDateRanges(): void
     {
-        return $this->morphMany(config('date-ranges.models.date_range'), 'model');
+        $this->dateRangesOptions = $this->getDateRangesOptions();
     }
 
     public function scopeIsActive(Builder $query): Builder
     {
-        return $query->whereHas('dates', fn (Builder $query) => $query->isActive());
+        return $query->whereHas(
+            config('date-range.relationship.name_on_parent'),
+            fn (Builder $query) => $query->isActive()
+        );
     }
 
     public function scopeIsActiveOn(Builder $query, Carbon $date): Builder
     {
-        return $query->whereHas('dates', fn (Builder $query) => $query->isActiveOn($date));
+        return $query->whereHas(
+            config('date-range.relationship.name_on_parent'),
+            fn (Builder $query) => $query->isActiveOn($date)
+        );
     }
 
     public function scopeIsInactive(Builder $query): Builder
     {
-        return $query->whereDoesntHave('dates', fn (Builder $query) => $query->isActive());
+        return $query->whereDoesntHave(
+            config('date-range.relationship.name_on_parent'),
+            fn (Builder $query) => $query->isActive()
+        );
     }
 
     public function scopeIsInactiveOn(Builder $query, Carbon $date): Builder
     {
-        return $query->whereDoesntHave('dates', fn (Builder $query) => $query->isActiveOn($date));
+        return $query->whereDoesntHave(
+            config('date-range.relationship.name_on_parent'),
+            fn (Builder $query) => $query->isActiveOn($date)
+        );
     }
 
     public function scopeOrderByDateRange(Builder $query, string $direction = 'asc'): Builder
     {
         /** @var DateRangeOptions $dateRangeConfig */
-        $dateRangeOptions = (new (config('date-ranges.models.date_range')))->getDateRangeOptions();
+        $dateRangeOptions = (new ($this->getDateRangesOptions()->dateRangeModel))->getDateRangeOptions();
 
         if ($direction === 'asc') {
             return $query
@@ -78,27 +113,32 @@ trait InteractsWithDateRanges
 
     protected function getDatesOrderQuery($direction = 'asc'): Builder
     {
+        $options = $this->getDateRangesOptions();
         /** @var Model $dateModel */
-        $dateModel = new (config('date-ranges.models.date_range'));
+        $dateModel = new ($options->dateRangeModel);
 
         return $dateModel
             ->newQuery()
             ->whereColumn(
-                $dateModel->qualifyColumn(config('date-ranges.column_names.model_morph_key')),
+                $dateModel->qualifyColumn($options->foreignKeyName.'_id'),
                 $this->getQualifiedKeyName()
             )
-            ->orderBy($dateModel->qualifyColumn(config('date-ranges.column_names.model_morph_key')), $direction)
+            ->orderBy($dateModel->qualifyColumn($options->foreignKeyName.'_id'), $direction)
             ->take(1);
     }
 
     public function isActive(): bool
     {
-        return $this->dates()->isActive()->exists();
+        return $this->{config('date-range.relationship.name_on_parent')}()
+            ->isActive()
+            ->exists();
     }
 
     public function isActiveOn(Carbon $date): bool
     {
-        return $this->dates()->isActiveOn($date)->exists();
+        return $this->{config('date-range.relationship.name_on_parent')}()
+            ->isActiveOn($date)
+            ->exists();
     }
 
     public function activate(?Carbon $date): bool
@@ -110,9 +150,9 @@ trait InteractsWithDateRanges
         }
 
         /** @var DateRangeOptions $dateRangeConfig */
-        $dateRangeOptions = (new (config('date-ranges.models.date_range')))->getDateRangeOptions();
+        $dateRangeOptions = (new ($this->getDateRangesOptions()->dateRangeModel))->getDateRangeOptions();
 
-        $this->dates()->create([
+        $this->{config('date-range.relationship.name_on_parent')}()->create([
             $dateRangeOptions->startAtField => $date,
             $dateRangeOptions->endAtField => null,
         ]);
@@ -124,8 +164,19 @@ trait InteractsWithDateRanges
     {
         $date = $date ?? Carbon::now();
 
-        $this->dates()->activeOn($date)->cursor()->each->deactivate($date);
+        $this->{config('date-range.relationship.name_on_parent')}()
+            ->activeOn($date)
+            ->cursor()
+            ->each
+            ->deactivate($date);
 
         return true;
     }
+
+    /**
+     * Get the options for the date ranges.
+     *
+     * @return DateRangesOptions
+     */
+    abstract public function getDateRangesOptions(): DateRangesOptions;
 }

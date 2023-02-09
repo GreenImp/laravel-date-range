@@ -7,9 +7,18 @@ return [
          * Eloquent model should be used to retrieve dates. You may use whatever you like.
          *
          * The model you want to use as a DateRange model needs to implement the
-         * `GreenImp\DateRange\Contracts\DateRange` contract.
+         * `GreenImp\DateRange\Contracts\HasDateRange` contract.
          */
         'date_range' => \GreenImp\DateRange\Models\DateRange::class,
+
+        /*
+         * When using multiple date ranges, with a non-polymorphic relationship (See relationships.polymorphic below),
+         * we need to know the which Eloquent model should be used as the parent of the dates (The recipient of the
+         * `belongsTo` relationship on the Date Ranges. You may use whatever you like.
+         *
+         * The model you want to use needs to implement the `GreenImp\DateRange\Contracts\HasDateRanges` contract.
+         */
+        'parent_model' => \GreenImp\DateRange\Models\Event::class,
     ],
 
     'table_names' => [
@@ -32,11 +41,39 @@ return [
          */
         'date_start_at_key' => 'start_at',
         'date_end_at_key' => 'end_at',
+    ],
+
+    /*
+     * When using models with multiple date ranges, this defines the relationship between a parent model and the date
+     * ranges.
+     */
+    'relationship' => [
+        /*
+         * The name of the relationship on the parent model.
+         */
+        'name_on_parent' => 'dates',
 
         /*
-         * The field name used for the polymorphic ID in the date ranges table.
+         * The name of the relationship on the child models (e.g. `DateRange`).
          */
-        'model_morph_key' => 'model_id',
+        'name_on_child' => 'model',
+
+        /*
+         * When using multiple date ranges, this determines whether the relationship should be polymorphic or not.
+         * This should usually be left as true, unless you are sure that you'll only ever want a single parent model
+         * type.
+         */
+        'polymorphic' => true,
+
+        /*
+         * The field name used for the relationship in the date ranges table.
+         *
+         * For polymorphic relations, this will be the prefix for the `_type` and `_id` fields.
+         * For has many relations, this will be the prefix for the `_id` field.
+         *
+         * Set to `null` to use the same as the singular of the `name_on_child` value.
+         */
+        'foreign_key_name' => 'model',
     ],
 
     /*

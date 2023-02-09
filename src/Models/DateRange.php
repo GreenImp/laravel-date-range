@@ -2,13 +2,12 @@
 
 namespace GreenImp\DateRange\Models;
 
-use GreenImp\DateRange\Contracts\DateRange as DateRangeInterface;
-use GreenImp\DateRange\DateRangeOptions;
+use GreenImp\DateRange\Contracts\HasDateRange;
 use GreenImp\DateRange\InteractsWithDateRange;
+use GreenImp\DateRange\Options\DateRangeOptions;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\MorphTo;
 
-class DateRange extends Model implements DateRangeInterface
+class DateRange extends Model implements HasDateRange
 {
     use InteractsWithDateRange;
 
@@ -20,11 +19,6 @@ class DateRange extends Model implements DateRangeInterface
     public function getKeyName(): string
     {
         return config('date-range.column_names.date_range_key', parent::getKeyName());
-    }
-
-    public function model(): MorphTo
-    {
-        return $this->morphTo();
     }
 
     public function getDateRangeOptions(): DateRangeOptions

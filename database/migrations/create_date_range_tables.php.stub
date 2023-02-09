@@ -14,28 +14,36 @@ return new class extends Migration {
     {
         $tableNames = config('date-range.table_names');
         $columnNames = config('date-range.column_names');
+        $relationship = config('date-range.relationship');
 
         if (empty($tableNames)) {
             throw new \Exception('Error: config/date-range.php not loaded. Run [php artisan config:clear] and try again.');
         }
 
         if (config('date-range.multiple_dates')) {
-            Schema::create($tableNames['date_ranges'], function (Blueprint $table) use ($columnNames) {
+            Schema::create($tableNames['date_ranges'], function (Blueprint $table) use ($columnNames, $relationship) {
                 $table->id($columnNames['date_range_key']);
                 $table->datetime($columnNames['date_start_at_key'])
                     ->nullable();
                 $table->dateTime($columnNames['date_end_at_key'])
                     ->nullable();
 
-                $table->string('model_type');
-                $table->unsignedBigInteger($columnNames['model_morph_key']);
+                if ($relationship['polymorphic']) {
+                    $table->morphs($relationship['foreign_key_name'] ?? $relationship['name_on_child']);
+                } else {
+                    $table
+                        ->foreignIdFor(
+                            $relationship['parent_model'],
+                            ($relationship['foreign_key_name'] ?? $relationship['name_on_child']).'_id'
+                        )
+                        ->constrained();
+                }
 
                 if ((new (config('date-range.models.date_range')))->timestamps) {
                     $table->timestamps();
                 }
 
                 $table->index([$columnNames['date_start_at_key'], $columnNames['date_end_at_key']]);
-                $table->index([$columnNames['model_morph_key'], 'model_type']);
             });
         }
     }
