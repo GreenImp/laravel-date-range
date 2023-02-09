@@ -42,7 +42,7 @@ class DateRangeOptions
                 ?? config('date-range.relationship.foreign_key_name')
                 ?? Str::singular(config('date-range.relationship.name_on_child')),
             $polymorphic ?? config('date-range.relationship.polymorphic', true),
-            $parent ?? config('date-range.relationship.parent_model'),
+            $parent ?? config('date-range.models.parent_model'),
         );
     }
 

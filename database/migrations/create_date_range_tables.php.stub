@@ -14,6 +14,7 @@ return new class extends Migration {
     {
         $tableNames = config('date-range.table_names');
         $columnNames = config('date-range.column_names');
+        $models = config('date-range.models');
         $relationship = config('date-range.relationship');
 
         if (empty($tableNames)) {
@@ -21,7 +22,7 @@ return new class extends Migration {
         }
 
         if (config('date-range.multiple_dates')) {
-            Schema::create($tableNames['date_ranges'], function (Blueprint $table) use ($columnNames, $relationship) {
+            Schema::create($tableNames['date_ranges'], function (Blueprint $table) use ($columnNames, $models, $relationship) {
                 $table->id($columnNames['date_range_key']);
                 $table->datetime($columnNames['date_start_at_key'])
                     ->nullable();
@@ -33,13 +34,13 @@ return new class extends Migration {
                 } else {
                     $table
                         ->foreignIdFor(
-                            $relationship['parent_model'],
+                            $models['parent_model'],
                             ($relationship['foreign_key_name'] ?? $relationship['name_on_child']).'_id'
                         )
                         ->constrained();
                 }
 
-                if ((new (config('date-range.models.date_range')))->timestamps) {
+                if ((new ($models['date_range']))->timestamps) {
                     $table->timestamps();
                 }
 
